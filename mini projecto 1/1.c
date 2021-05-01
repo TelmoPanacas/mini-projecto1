@@ -61,7 +61,7 @@ void menu(){
             printf("%c", menu[i][j]);
         }
         putchar('\n');
-        putchar('\n');
+        
     }
     
 
