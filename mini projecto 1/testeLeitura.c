@@ -33,6 +33,7 @@ int main()
    while(fgets(linha, sizeof(linha), fp))
    {
       printf("%s", linha);
+      
    }
    fclose(fp);
    return 0;

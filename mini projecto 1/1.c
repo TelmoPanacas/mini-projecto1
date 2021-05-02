@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h> 
 #define MAX 256
 
 void menu();
@@ -7,36 +8,97 @@ void menu();
 int main(void) {
     char input = '>';
     char opcao[MAX], file_name[MAX];
-       
-    puts("+-----------------------------------------------------");
-        puts("read <filename>     - read input file");
-        puts("show                - show the mine map");
-        puts("trigger <x> <y>     - trigger mine at <x> <y>");
-        puts("plant <x> <y>       - place armed mine at <x> <y>");
-        puts("export <filename>   - save file with current map");
-        puts("quit                - exit program");
-        puts("sos                 - show menu");
-        puts("+-----------------------------------------------------");
-        printf("%c",input);
+    FILE *ficheiroOriginal, *ficheiroExport;
+    int counterLinha =0, linhaDimensoes = 0, counterIgnoradas = 0;
+    
+    /*Primeiro menu*/
+    menu();
+    char linhaCopiada[MAX], file_name_export[MAX];
     while (1)
     {        
+        putchar('>');
         scanf(" %s", opcao);
         
         if (strcmp(opcao, "quit") == 0)
         {
             return 0;
-        }
-        if(strcmp(opcao, "sos") == 0){
+        }else if(strcmp(opcao, "sos") == 0){
             menu();
-            putchar('>');
-        }
-        if (strcmp(opcao, "export") == 0)
+        }else if (strcmp(opcao, "export") == 0)
+        {
+            scanf(" %s", file_name_export);
+            
+
+            ficheiroOriginal = fopen(file_name, "r");
+
+            if (ficheiroOriginal == NULL)
+            {
+                puts("Error opening file");
+                exit(EXIT_FAILURE);
+            }
+            
+
+            ficheiroExport = fopen(file_name_export, "w");
+            if (ficheiroExport == NULL)
+            {
+                fclose(ficheiroOriginal);
+                puts("Error opening file");
+                exit(EXIT_FAILURE);
+            }
+            while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
+            {
+                if (linhaCopiada[0] == '#')
+                {
+                    continue;
+                }else{
+                fputs(linhaCopiada, ficheiroExport);
+                }
+            }
+            
+            fclose(ficheiroOriginal);
+            fclose(ficheiroExport);
+            puts("O ficheiro foi exportado com sucesso");
+            
+        }else if(strcmp(opcao, "read") == 0)
         {
             scanf(" %s", file_name);
-            /*Meter aqui o programa 'testeCopiarFicheiro'*/
+            puts(file_name);
+            ficheiroOriginal = fopen(file_name, "r");
+            if (ficheiroOriginal == NULL)
+            {
+                puts("Error openning file");
+                exit(EXIT_FAILURE);
+            } else {
+                printf("O ficheiro %s foi lido corretamente\n", file_name);
+               
+               while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
+                {
+                    /*COMO FAZER QUE A PRIMEIRA LINHA LIDA QUE 
+                    NAO SEJA UM COMENTÁRIO SEJA A DAS DIMENSÕES DA MATRIZ*/
+                    counterLinha++;
+                    if (linhaCopiada[0] == '#')
+                    {
+                        counterIgnoradas++;
+                        continue;
+                    }
+                    if (counterLinha == 1 && counterIgnoradas == 0)
+                    {
+                        printf("A linha das dimensões da matriz é a linha 0\n");
+                    }
+                    
+                    
+                }
+                
+                
+                /*Dar print no mapa*/
+            }
+            fclose(ficheiroOriginal);
             
+        }else {
+            puts("There is no such option, returning to menu");
+            menu();
         }
-        
+
     }
     return 0;
 }
