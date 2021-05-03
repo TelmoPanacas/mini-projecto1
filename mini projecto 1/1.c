@@ -4,12 +4,42 @@
 #define MAX 256
 
 void menu();
+void preencherMatriz(char matrizMapa[25][25]);
+void limparMapa(char matrizMapa[25][25]);
 
 int main(void) {
     char input = '>';
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
-    int counterLinha =0, linhaDimensoes = 0, counterIgnoradas = 0;
+    int podesLerDimensoes = 0, nLin = 0, nCol = 0, xLinha, xColuna,
+        triggerX = 0, triggerY = 0, plantX = 0, plantY = 0;
+    
+    char matrizMapa[25][25] = {
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
+        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'}};
     
     /*Primeiro menu*/
     menu();
@@ -28,7 +58,6 @@ int main(void) {
         {
             scanf(" %s", file_name_export);
             
-
             ficheiroOriginal = fopen(file_name, "r");
 
             if (ficheiroOriginal == NULL)
@@ -69,31 +98,104 @@ int main(void) {
                 puts("Error openning file");
                 exit(EXIT_FAILURE);
             } else {
-                printf("O ficheiro %s foi lido corretamente\n", file_name);
-               
-               while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
+                printf("\nO ficheiro %s foi aberto corretamente\n", file_name);
+
+                /*Ler até ser lido as dimensões do ficheiro*/
+                while (podesLerDimensoes == 0 && fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
                 {
-                    /*COMO FAZER QUE A PRIMEIRA LINHA LIDA QUE 
-                    NAO SEJA UM COMENTÁRIO SEJA A DAS DIMENSÕES DA MATRIZ*/
-                    counterLinha++;
+                    
                     if (linhaCopiada[0] == '#')
                     {
-                        counterIgnoradas++;
-                        continue;
+                        continue;                        
                     }
-                    if (counterLinha == 1 && counterIgnoradas == 0)
-                    {
-                        printf("A linha das dimensões da matriz é a linha 0\n");
-                    }
-                    
-                    
+                    char *nLinhas = strtok(linhaCopiada, " ");
+                    nLin = atoi(nLinhas);
+                    char *nColunas = strtok(NULL, " ");
+                    nCol = atoi(nColunas);
+                    podesLerDimensoes++;
                 }
+                         
                 
-                
-                /*Dar print no mapa*/
+                /*Aqui é lido o resto e adicionado a matriz*/
+                while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
+                {
+                    if (linhaCopiada[0] == '#')
+                    {
+                        continue;                        
+                    }
+                    /*Separar as informações*/
+                    char *tipoBomba = strtok(linhaCopiada, " ");
+                    char *linha = strtok(NULL, " ");
+                    char *coluna = strtok(NULL, " ");
+                    
+                    if (coluna == NULL || linha == NULL)
+                    {
+                        puts("\nFile is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }else{
+                    
+                    xLinha = atoi(linha);
+                    xColuna = atoi(coluna);
+                    if (xLinha < 0 || xColuna < 0 || xLinha > 25 || xColuna > 25)
+                    {
+                        puts("\nFile is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }
+                    
+                    matrizMapa[xLinha][xColuna] = tipoBomba[0];
+                    }
+                    
+                }               
+              
             }
-            fclose(ficheiroOriginal);
+            fclose(ficheiroOriginal);           
+            preencherMatriz(matrizMapa);
+        }else if(strcmp(opcao, "show") == 0)
+        {
+            for (int linhas = 0; linhas < 25; linhas++)
+            {
+                for (int colunas = 0; colunas < 25; colunas++)
+                {
+                    printf("%c", matrizMapa[linhas][colunas]);
+                }
+                putchar('\n');
+            }
+        }else if(strcmp(opcao, "trigger") == 0)
+        {
+            scanf(" %d", &triggerX);
+            scanf(" %d", &triggerY);
             
+            if (triggerX > 25 || triggerY >25 || triggerX < 0 || triggerY < 0)
+            {
+                puts("Invalid coordinate");
+            }
+            
+            if (matrizMapa[triggerX][triggerY] == '.')
+            {
+                matrizMapa[triggerX][triggerY] = '*';
+            }
+
+            if (matrizMapa[triggerX][triggerY] != '.' && matrizMapa[triggerX][triggerY] != '*')
+            {
+                puts("There is no bomb at the specified coordinate");
+            }
+            
+        }else if (strcmp(opcao, "plant") == 0)
+        {
+            scanf(" %d", &plantX);
+            scanf(" %d", &plantY);
+
+            if (plantX > 25 || plantY >25 || plantX < 0 || plantY < 0)
+            {
+                puts("Invalid coordinate");
+            }
+
+            if (matrizMapa[plantX][plantY] == '*')
+            {
+                matrizMapa[plantX][plantY] = '.';
+            }
         }else {
             puts("There is no such option, returning to menu");
             menu();
@@ -123,9 +225,33 @@ void menu(){
             printf("%c", menu[i][j]);
         }
         putchar('\n');
+    }
+}
+
+void preencherMatriz(char matrizMapa[25][25])
+{
+    
+    for (int linhas = 0; linhas < 25; linhas++)
+    {
+        for (int colunas = 0; colunas < 25; colunas++)
+        {
+            if (matrizMapa[linhas][colunas] == '\0')
+            {
+                matrizMapa[linhas][colunas] = '_';
+            }            
+        }        
+    }
+}
+
+void limparMapa(char matrizMapa[25][25])
+{
+    for (int i = 0; i < 25; i++)
+    {
+        for (int j = 0; j < 25; j++)
+        {
+            matrizMapa[i][j] = '\0';
+        }
         
     }
     
-
-
 }
