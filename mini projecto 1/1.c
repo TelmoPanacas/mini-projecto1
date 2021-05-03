@@ -9,7 +9,7 @@ void limparMapa(char matrizMapa[25][25]);
 
 int main(void) {
     char input = '>';
-    char opcao[MAX], file_name[MAX];
+    char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
     int podesLerDimensoes = 0, nLin = 0, nCol = 0, xLinha, xColuna,
         triggerX = 0, triggerY = 0, plantX = 0, plantY = 0;
@@ -51,22 +51,16 @@ int main(void) {
         
         if (strcmp(opcao, "quit") == 0)
         {
+
             return 0;
+
         }else if(strcmp(opcao, "sos") == 0){
+            
             menu();
+
         }else if (strcmp(opcao, "export") == 0)
         {
             scanf(" %s", file_name_export);
-            
-            ficheiroOriginal = fopen(file_name, "r");
-
-            if (ficheiroOriginal == NULL)
-            {
-                puts("Error opening file");
-                exit(EXIT_FAILURE);
-            }
-            
-
             ficheiroExport = fopen(file_name_export, "w");
             if (ficheiroExport == NULL)
             {
@@ -74,17 +68,27 @@ int main(void) {
                 puts("Error opening file");
                 exit(EXIT_FAILURE);
             }
-            while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
+            
+            for (int k = 0; k < 1; k++)
             {
-                if (linhaCopiada[0] == '#')
+                for (int u = 0; u < 3; u++)
                 {
-                    continue;
-                }else{
-                fputs(linhaCopiada, ficheiroExport);
+                    /*NAO ESTÁ A COPIAR BEM O CARACTER*/
+                    sprintf(xExport, " %d", k);
+                    sprintf(yExport, " %d", u);
+                    cExport[0] = matrizMapa[k][u];
+                    
+                    puts(yExport);
+                    cExport[0] = '\0';
+                    strcat(cExport, xExport);
+                    strcat(cExport, yExport);
+                    strcpy(linhaExport, cExport);
+                    fputs(linhaExport, ficheiroExport);
+                    
                 }
+                
             }
             
-            fclose(ficheiroOriginal);
             fclose(ficheiroExport);
             puts("O ficheiro foi exportado com sucesso");
             
