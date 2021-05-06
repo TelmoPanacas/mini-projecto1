@@ -8,11 +8,16 @@ void preencherMatriz(char matrizMapa[25][25]);
 void limparMapa(char matrizMapa[25][25]);
 
 int main(void) {
-    char input = '>';
+    
     char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
-    int podesLerDimensoes = 0, nLin = 0, nCol = 0, xLinha, xColuna,
+    int podesLerDimensoes = 0, xLinha, xColuna,
         triggerX = 0, triggerY = 0, plantX = 0, plantY = 0;
+    
+    char linhaCopiada[MAX];
+    char file_name_export[MAX];
+
+    
     
     char matrizMapa[25][25] = {
         {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
@@ -43,7 +48,7 @@ int main(void) {
     
     /*Primeiro menu*/
     menu();
-    char linhaCopiada[MAX], file_name_export[MAX];
+    
     while (1)
     {        
         putchar('>');
@@ -60,6 +65,7 @@ int main(void) {
 
         }else if (strcmp(opcao, "export") == 0)
         {
+            int k;
             scanf(" %s", file_name_export);
             ficheiroExport = fopen(file_name_export, "w");
             if (ficheiroExport == NULL)
@@ -68,10 +74,10 @@ int main(void) {
                 puts("Error opening file");
                 exit(EXIT_FAILURE);
             }
-            
-            for (int k = 0; k < 1; k++)
+            for (k = 0; k < 1; k++)
             {
-                for (int u = 0; u < 3; u++)
+                int u;
+                for (u = 0; u < 3; u++)
                 {
                     /*NAO ESTÁ A COPIAR BEM O CARACTER*/
                     sprintf(xExport, " %d", k);
@@ -112,10 +118,8 @@ int main(void) {
                     {
                         continue;                        
                     }
-                    char *nLinhas = strtok(linhaCopiada, " ");
-                    nLin = atoi(nLinhas);
-                    char *nColunas = strtok(NULL, " ");
-                    nCol = atoi(nColunas);
+                    
+                
                     podesLerDimensoes++;
                 }
                          
@@ -126,31 +130,31 @@ int main(void) {
                     if (linhaCopiada[0] == '#')
                     {
                         continue;                        
-                    }
-                    /*Separar as informações*/
-                    char *tipoBomba = strtok(linhaCopiada, " ");
-                    char *linha = strtok(NULL, " ");
-                    char *coluna = strtok(NULL, " ");
-                    
-                    if (coluna == NULL || linha == NULL)
-                    {
-                        puts("\nFile is corrupted");
-                        limparMapa(matrizMapa);
-                        fclose(ficheiroOriginal);
                     }else{
+                        /*Separar as informações*/
+                        char *tipoBomba = strtok(linhaCopiada, " ");
+                        char *linha = strtok(NULL, " ");
+                        char *coluna = strtok(NULL, " ");
                     
-                    xLinha = atoi(linha);
-                    xColuna = atoi(coluna);
-                    if (xLinha < 0 || xColuna < 0 || xLinha > 25 || xColuna > 25)
-                    {
-                        puts("\nFile is corrupted");
-                        limparMapa(matrizMapa);
-                        fclose(ficheiroOriginal);
-                    }
+                        if (coluna == NULL || linha == NULL)
+                        {
+                            puts("\nFile is corrupted");
+                            limparMapa(matrizMapa);
+                            fclose(ficheiroOriginal);
+                        }else{
                     
-                    matrizMapa[xLinha][xColuna] = tipoBomba[0];
-                    }
+                        xLinha = atoi(linha);
+                        xColuna = atoi(coluna);
+                        if (xLinha < 0 || xColuna < 0 || xLinha > 25 || xColuna > 25)
+                        {
+                            puts("\nFile is corrupted");
+                            limparMapa(matrizMapa);
+                            fclose(ficheiroOriginal);
+                        }
                     
+                        matrizMapa[xLinha][xColuna] = tipoBomba[0];
+                        }
+                    }  
                 }               
               
             }
@@ -158,9 +162,11 @@ int main(void) {
             preencherMatriz(matrizMapa);
         }else if(strcmp(opcao, "show") == 0)
         {
-            for (int linhas = 0; linhas < 25; linhas++)
+            int linhas;
+            for (linhas = 0; linhas < 25; linhas++)
             {
-                for (int colunas = 0; colunas < 25; colunas++)
+                int colunas;
+                for (colunas = 0; colunas < 25; colunas++)
                 {
                     printf("%c", matrizMapa[linhas][colunas]);
                 }
@@ -210,6 +216,7 @@ int main(void) {
 }
 
 void menu(){
+    int i;
     char menu[9][54]={
         {'+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-'},
         {'r','e','a','d',' ','<','f','i','l','e','n','a','m','e','>',' ',' ',' ',' ',' ','-',' ','r','e','a','d',' ','i','n','p','u','t',' ','f','i','l','e'},
@@ -222,9 +229,11 @@ void menu(){
         {'+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-'}};
 
     putchar('\n');
-    for (int i = 0; i < 9; i++)
+    
+    for (i = 0; i < 9; i++)
     {
-        for (int j = 0; j < 54 ; j++)
+        int j;
+        for (j = 0; j < 54 ; j++)
         {
             printf("%c", menu[i][j]);
         }
@@ -234,10 +243,11 @@ void menu(){
 
 void preencherMatriz(char matrizMapa[25][25])
 {
-    
-    for (int linhas = 0; linhas < 25; linhas++)
+    int linhas;
+    for (linhas = 0; linhas < 25; linhas++)
     {
-        for (int colunas = 0; colunas < 25; colunas++)
+        int colunas;
+        for (colunas = 0; colunas < 25; colunas++)
         {
             if (matrizMapa[linhas][colunas] == '\0')
             {
@@ -249,9 +259,11 @@ void preencherMatriz(char matrizMapa[25][25])
 
 void limparMapa(char matrizMapa[25][25])
 {
-    for (int i = 0; i < 25; i++)
+    int i;
+    for (i = 0; i < 25; i++)
     {
-        for (int j = 0; j < 25; j++)
+        int j;
+        for (j = 0; j < 25; j++)
         {
             matrizMapa[i][j] = '\0';
         }
