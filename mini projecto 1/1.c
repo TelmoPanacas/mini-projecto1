@@ -7,6 +7,36 @@ void menu();
 void preencherMatriz(char matrizMapa[25][25]);
 void limparMapa(char matrizMapa[25][25]);
 
+/*ERROS:
+        ERRO 2 - Ja mudei de bomb para mine, mas está a escrever o nome do fichero
+        ERRO 4 - Devia de dar invalid coordinate, mas não dá, pede para escrever denovo 
+        EERO 5 - Nao sei, quando tento plantar e mostrar o mapa sem ler o ficheiro é preciso alguma mensagem de rro?
+        ERRO 6 - Nao leu o ficheiro, e nao deu trigger a bomba
+        ERRO 7 - Simplesmente inputs
+        ERRO 10 - Nao sei, escreve o nome do ficheiro??
+        ERRO 13 - Erro 10
+        ERRO 14 - Erro 10 e diz que está corrompido
+        ERRO 15 - Erro 14
+        ERRO 16 - Erro 10
+        ERRO 17 - Erro 10
+        ERRO 18 - Devia de ser corrompido , mas Erro 10 e faz o mapa
+        ERRO 19 - Erro 7
+        ERRO 20 - Erro 18
+        ERRO 21 - Erro 7
+        ERRO 22 - Erro 18
+        ERRO 23 - Erro 7
+        ERRO 24 - Erro 10
+        ERRO 25 - Erro 7
+        ERRO 26 - Erro 10
+
+        ERRO 37 - Inouts
+        ERRO 39 - Não substituiu os \0 por _
+        ERRO 40 - RESOLVIDO
+
+
+
+*/
+
 int main(void) {
     
     char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
@@ -108,7 +138,6 @@ int main(void) {
                 puts("Error openning file");
                 exit(EXIT_FAILURE);
             } else {
-                printf("\nO ficheiro %s foi aberto corretamente\n", file_name);
 
                 /*Ler até ser lido as dimensões do ficheiro*/
                 while (podesLerDimensoes == 0 && fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
@@ -180,43 +209,45 @@ int main(void) {
             if (triggerX > 25 || triggerY >25 || triggerX < 0 || triggerY < 0)
             {
                 puts("Invalid coordinate");
-            }
+            }else {
             
-            if (matrizMapa[triggerX][triggerY] == '.')
-            {
-                matrizMapa[triggerX][triggerY] = '*';
-            }
+                if (matrizMapa[triggerX][triggerY] == '.')
+                {
+                    matrizMapa[triggerX][triggerY] = '*';
+                }
 
-            if (matrizMapa[triggerX][triggerY] != '.' && matrizMapa[triggerX][triggerY] != '*')
-            {
-                puts("There is no bomb at the specified coordinate");
+                if (matrizMapa[triggerX][triggerY] != '.' && matrizMapa[triggerX][triggerY] != '*')
+                {
+                    puts("No mine at the specified coordinate");
+                }
             }
-            
         }else if (strcmp(opcao, "plant") == 0)
         {
             scanf(" %d", &plantX);
             scanf(" %d", &plantY);
 
-            if (plantX > 25 || plantY >25 || plantX < 0 || plantY < 0)
-            {
-                puts("Invalid coordinate");
-            }
+                if (plantX > 25 || plantY >25 || plantX < 0 || plantY < 0)
+                {
+                    puts("Invalid coordinate");
+                }else{
 
-            if (matrizMapa[plantX][plantY] == '*')
-            {
-                matrizMapa[plantX][plantY] = '.';
+                    if (matrizMapa[plantX][plantY] == '*')
+                    {
+                        matrizMapa[plantX][plantY] = '.';
+                    }
+                }
+            
+            }else {
+                puts("No such option, returning to menu");
+                menu();
             }
-        }else {
-            puts("There is no such option, returning to menu");
-            menu();
-        }
 
     }
     return 0;
 }
 
 void menu(){
-    int i;
+    /*int i;
     char menu[9][54]={
         {'+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-'},
         {'r','e','a','d',' ','<','f','i','l','e','n','a','m','e','>',' ',' ',' ',' ',' ','-',' ','r','e','a','d',' ','i','n','p','u','t',' ','f','i','l','e'},
@@ -239,6 +270,16 @@ void menu(){
         }
         putchar('\n');
     }
+    */
+   puts("+-----------------------------------------------------");
+   puts("read <filename>     - read input file");
+   puts("show                - show the mine map");
+   puts("trigger <x> <y>     - trigger mine at <x> <y>");
+   puts("plant <x> <y>       - place armed mine at <x> <y>");
+   puts("export <filename>   - save file with current map");
+   puts("quit                - exit program");
+   puts("sos                 - show menu");
+   puts("+-----------------------------------------------------");
 }
 
 void preencherMatriz(char matrizMapa[25][25])
