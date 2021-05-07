@@ -12,8 +12,7 @@ int main(void) {
     
     char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
-    int podesLerDimensoes = 0, xLinha, xColuna,
-        triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
+    int podesLerDimensoes = 0,triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
     
     char linhaCopiada[MAX];
     char file_name_export[MAX];
@@ -114,7 +113,8 @@ int main(void) {
             
         }else if(strncmp(opcao, "read", 4) == 0)
         {    
-            int n;
+            int n,k,linha,coluna;
+            char tipoBomba;
             n = sscanf(opcao,"%*s %s", file_name);
             if (n != 1)
             {
@@ -151,28 +151,21 @@ int main(void) {
                         continue;                        
                     }else{
                         /*Separar as informações*/
-                        
-                        char *tipoBomba = strtok(linhaCopiada, " ");
-                        char *linha = strtok(NULL, " ");
-                        char *coluna = strtok(NULL, " ");
-                    
-                        if (coluna == NULL || linha == NULL)
+                        k = sscanf(linhaCopiada, "%c %d %d", &tipoBomba, &linha, &coluna);
+                        if (k != 3)
                         {
-                            puts("\nFile is corrupted");
+                            puts("File is corrupted");
                             limparMapa(matrizMapa);
                             fclose(ficheiroOriginal);
                         }else{
                     
-                        xLinha = atoi(linha);
-                        xColuna = atoi(coluna);
-                        if (xLinha < 0 || xColuna < 0 || xLinha > 25 || xColuna > 25)
-                        {
-                            puts("\nFile is corrupted");
-                            limparMapa(matrizMapa);
-                            fclose(ficheiroOriginal);
-                        }
-                    
-                        matrizMapa[xLinha][xColuna] = tipoBomba[0];
+                            if (linha < 0 || coluna < 0 || linha > 24 || coluna > 24)
+                            {
+                                puts("File is corrupted");
+                                limparMapa(matrizMapa);
+                                fclose(ficheiroOriginal);
+                            }
+                            matrizMapa[linha][coluna] = tipoBomba;
                         }
                     }  
                 }               
