@@ -7,43 +7,13 @@ void menu();
 void preencherMatriz(char matrizMapa[25][25]);
 void limparMapa(char matrizMapa[25][25]);
 
-/*ERROS:
-        ERRO 2 - Ja mudei de bomb para mine, mas está a escrever o nome do fichero
-        ERRO 4 - Devia de dar invalid coordinate, mas não dá, pede para escrever denovo 
-        EERO 5 - Nao sei, quando tento plantar e mostrar o mapa sem ler o ficheiro é preciso alguma mensagem de rro?
-        ERRO 6 - Nao leu o ficheiro, e nao deu trigger a bomba
-        ERRO 7 - Simplesmente inputs
-        ERRO 10 - Nao sei, escreve o nome do ficheiro??
-        ERRO 13 - Erro 10
-        ERRO 14 - Erro 10 e diz que está corrompido
-        ERRO 15 - Erro 14
-        ERRO 16 - Erro 10
-        ERRO 17 - Erro 10
-        ERRO 18 - Devia de ser corrompido , mas Erro 10 e faz o mapa
-        ERRO 19 - Erro 7
-        ERRO 20 - Erro 18
-        ERRO 21 - Erro 7
-        ERRO 22 - Erro 18
-        ERRO 23 - Erro 7
-        ERRO 24 - Erro 10
-        ERRO 25 - Erro 7
-        ERRO 26 - Erro 10
-
-        ERRO 37 - Inputs
-        ERRO 38 - (EM PRINCIPIO RESOLVIDO) Não substituiu os \0 por _ 
-        ERRO 39 - inputs
-        ERRO 40 - RESOLVIDO
-
-
-
-*/
 
 int main(void) {
     
     char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
     int podesLerDimensoes = 0, xLinha, xColuna,
-        triggerX = 0, triggerY = 0, plantX = 0, plantY = 0;
+        triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
     
     char linhaCopiada[MAX];
     char file_name_export[MAX];
@@ -83,21 +53,27 @@ int main(void) {
     while (1)
     {        
         putchar('>');
-        scanf(" %s", opcao);
+        fgets(opcao,128,stdin);
         
-        if (strcmp(opcao, "quit") == 0)
+        if (strncmp(opcao, "quit", 4) == 0)
         {
 
             return 0;
 
-        }else if(strcmp(opcao, "sos") == 0){
+        }else if(strncmp(opcao, "sos", 3) == 0){
             
             menu();
 
-        }else if (strcmp(opcao, "export") == 0)
+        }else if (strncmp(opcao, "export", 6) == 0)
         {
-            int k;
-            scanf(" %s", file_name_export);
+            int k,n;
+            n = sscanf(opcao,"%*s %s", file_name_export);
+            if (n != 1)
+            {
+                puts("Invalid command!");
+                continue;
+            }
+            
             ficheiroExport = fopen(file_name_export, "w");
             if (ficheiroExport == NULL)
             {
@@ -105,38 +81,50 @@ int main(void) {
                 puts("Error opening file");
                 exit(EXIT_FAILURE);
             }
-            for (k = 0; k < 1; k++)
+            for (k = 0; k < 25; k++)
             {
                 int u;
-                for (u = 0; u < 3; u++)
+                for (u = 0; u < 25; u++)
                 {
                     /*NAO ESTÁ A COPIAR BEM O CARACTER*/
                     sprintf(xExport, " %d", k);
                     sprintf(yExport, " %d", u);
                     cExport[0] = matrizMapa[k][u];
                     
+                    /*
+                    printf("%s\n", cExport);
+                    puts(xExport);
                     puts(yExport);
-                    cExport[0] = '\0';
-                    strcat(cExport, xExport);
-                    strcat(cExport, yExport);
-                    strcpy(linhaExport, cExport);
+                    */
+                    strcpy(linhaExport,cExport);
+                    strcat(linhaExport, " ");
+                    strcat(linhaExport,xExport);
+                    strcat(linhaExport, " ");
+                    strcat(linhaExport, yExport);
+                    
+                    
                     fputs(linhaExport, ficheiroExport);
+                    fputc('\n',ficheiroExport);
                     
                 }
                 
             }
             
             fclose(ficheiroExport);
-            puts("O ficheiro foi exportado com sucesso");
             
-        }else if(strcmp(opcao, "read") == 0)
-        {
-            scanf("%s", file_name);
-            puts(file_name);
-            ficheiroOriginal = fopen(file_name, "r");
-            if (ficheiroOriginal == NULL || file_name[0] == '\0')
+        }else if(strncmp(opcao, "read", 4) == 0)
+        {    
+            int n;
+            n = sscanf(opcao,"%*s %s", file_name);
+            if (n != 1)
             {
-                
+                puts("Invalid command!");
+                continue;
+            }
+            
+            ficheiroOriginal = fopen(file_name, "r");
+            if (ficheiroOriginal == NULL)
+            {                
                 puts("Error openning file");
                 exit(EXIT_FAILURE);
             } else {
@@ -163,6 +151,7 @@ int main(void) {
                         continue;                        
                     }else{
                         /*Separar as informações*/
+                        
                         char *tipoBomba = strtok(linhaCopiada, " ");
                         char *linha = strtok(NULL, " ");
                         char *coluna = strtok(NULL, " ");
@@ -191,10 +180,11 @@ int main(void) {
             }
             fclose(ficheiroOriginal);           
             preencherMatriz(matrizMapa);
-        }else if(strcmp(opcao, "show") == 0)
+        }else if(strncmp(opcao, "show", 4) == 0)
         {
-            preencherMatriz(matrizMapa);
             int linhas;
+            preencherMatriz(matrizMapa);
+            
             for (linhas = 0; linhas < 25; linhas++)
             {
                 int colunas;
@@ -204,16 +194,21 @@ int main(void) {
                 }
                 putchar('\n');
             }
-        }else if(strcmp(opcao, "trigger") == 0)
+        }else if(strncmp(opcao, "trigger", 7) == 0)
         {
-            scanf(" %d", &triggerX);
-            scanf(" %d", &triggerY);
+            int n;
+            n = sscanf(opcao,"%*s %d %d", &triggerX, &triggerY);
+            if (n != 2)
+            {
+                puts("Invalid coordinate");
+                continue;
+            }
             
-            if (triggerX > 25 || triggerY >25 || triggerX < 0 || triggerY < 0)
+            if (triggerX > 24 || triggerY >24 || triggerX < 0 || triggerY < 0)
             {
                 puts("Invalid coordinate");
             }else {
-            
+        
                 if (matrizMapa[triggerX][triggerY] == '.')
                 {
                     matrizMapa[triggerX][triggerY] = '*';
@@ -221,59 +216,39 @@ int main(void) {
 
                 if (matrizMapa[triggerX][triggerY] != '.' && matrizMapa[triggerX][triggerY] != '*')
                 {
-                    puts("No mine at the specified coordinate");
+                    puts("No mine at specified coordinate");
                 }
             }
-        }else if (strcmp(opcao, "plant") == 0)
-        {
-            scanf(" %d", &plantX);
-            scanf(" %d", &plantY);
-
-                if (plantX > 25 || plantY >25 || plantX < 0 || plantY < 0)
-                {
-                    puts("Invalid coordinate");
-                }else{
-
-                    if (matrizMapa[plantX][plantY] == '*')
-                    {
-                        matrizMapa[plantX][plantY] = '.';
-                    }
-                }
             
-            }else {
-                puts("No such option, returning to menu");
-                menu();
+        }else if (strncmp(opcao, "plant",5) == 0)
+        {
+            int n;
+            n = sscanf(opcao, "%*s %d %d", &plantX, &plantY);
+            if (n != 2)
+            {
+                puts("Invalid coordinate");
+                continue;
             }
+
+            if (plantX > 24 || plantY >24 || plantX < 0 || plantY < 0 )
+            {
+                puts("Invalid coordinate");
+            }else{
+                if (matrizMapa[plantX][plantY] == '*')
+                {
+                    matrizMapa[plantX][plantY] = '.';
+                }
+            }
+            
+        }else {
+            puts("Invalid command!");        
+        }
 
     }
     return 0;
 }
 
 void menu(){
-    /*int i;
-    char menu[9][54]={
-        {'+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-'},
-        {'r','e','a','d',' ','<','f','i','l','e','n','a','m','e','>',' ',' ',' ',' ',' ','-',' ','r','e','a','d',' ','i','n','p','u','t',' ','f','i','l','e'},
-        {'s','h','o','w',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','-',' ','s','h','o','w',' ','t','h','e',' ','m','i','n','e',' ','m','a','p'},
-        {'t','r','i','g','g','e','r',' ','<','x','>',' ','<','y','>',' ',' ',' ',' ',' ','-',' ','t','r','i','g','g','e','r',' ','m','i','n','e',' ','a','t',' ','<','x','>',' ','<','y','>'},
-        {'p','l','a','n','t',' ','<','x','>',' ','<','y','>',' ',' ',' ',' ',' ',' ',' ','-',' ','p','l','a','c','e',' ','a','r','m','e','d',' ','m','i','n','e',' ','a','t',' ','<','x','>',' ','<','y','>'},
-        {'e','x','p','o','r','t',' ','<','f','i','l','e','n','a','m','e','>',' ',' ',' ','-',' ','s','a','v','e',' ','f','i','l','e',' ','w','i','t','h',' ','c','u','r','r','e','n','t',' ','m','a','p'},
-        {'q','u','i','t',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','-',' ','e','x','i','t',' ','p','r','o','g','r','a','m'},
-        {'s','o','s',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','-','s','h','o','w',' ','m','e','n','u'},
-        {'+','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-','-'}};
-
-    putchar('\n');
-    
-    for (i = 0; i < 9; i++)
-    {
-        int j;
-        for (j = 0; j < 54 ; j++)
-        {
-            printf("%c", menu[i][j]);
-        }
-        putchar('\n');
-    }
-    */
    puts("+-----------------------------------------------------");
    puts("read <filename>     - read input file");
    puts("show                - show the mine map");
