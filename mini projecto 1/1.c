@@ -29,8 +29,9 @@ void limparMapa(char matrizMapa[25][25]);
         ERRO 25 - Erro 7
         ERRO 26 - Erro 10
 
-        ERRO 37 - Inouts
-        ERRO 39 - Não substituiu os \0 por _
+        ERRO 37 - Inputs
+        ERRO 38 - (EM PRINCIPIO RESOLVIDO) Não substituiu os \0 por _ 
+        ERRO 39 - inputs
         ERRO 40 - RESOLVIDO
 
 
@@ -130,11 +131,12 @@ int main(void) {
             
         }else if(strcmp(opcao, "read") == 0)
         {
-            scanf(" %s", file_name);
+            scanf("%s", file_name);
             puts(file_name);
             ficheiroOriginal = fopen(file_name, "r");
-            if (ficheiroOriginal == NULL)
+            if (ficheiroOriginal == NULL || file_name[0] == '\0')
             {
+                
                 puts("Error openning file");
                 exit(EXIT_FAILURE);
             } else {
@@ -191,6 +193,7 @@ int main(void) {
             preencherMatriz(matrizMapa);
         }else if(strcmp(opcao, "show") == 0)
         {
+            preencherMatriz(matrizMapa);
             int linhas;
             for (linhas = 0; linhas < 25; linhas++)
             {
