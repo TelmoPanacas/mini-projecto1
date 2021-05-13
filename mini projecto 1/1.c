@@ -6,6 +6,7 @@
 void menu();
 void preencherMatriz(char matrizMapa[25][25]);
 void limparMapa(char matrizMapa[25][25]);
+int verFicheiroTexto(char file_name[MAX]);
 
 
 int main(void) {
@@ -127,13 +128,19 @@ int main(void) {
             {                
                 puts("Error openning file");
                 exit(EXIT_FAILURE);
+            } else if (verFicheiroTexto(file_name) == 1)
+            {
+                                    /*ACHO QUE ISTO TRATA TO ERRO 34*/
+                puts("Error openning file");
+                exit(EXIT_FAILURE);
             } else {
 
                 /*Ler até ser lido as dimensões do ficheiro*/
+                /*PERGUNTAR AO STOR, NAO ESTÁ A IGNORAR LINHAS BRANCAS*/
                 while (podesLerDimensoes == 0 && fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
                 {
                     
-                    if (linhaCopiada[0] == '#')
+                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
                     {
                         continue;                        
                     }
@@ -146,12 +153,16 @@ int main(void) {
                 /*Aqui é lido o resto e adicionado a matriz*/
                 while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
                 {
-                    if (linhaCopiada[0] == '#')
+
+                    /*PORQUE É QUE NÃO ESTÁ A IGNORAR AS LINHAS BRANCAS?*/
+
+                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
                     {
                         continue;                        
-                    }else{
+                    }
+                        
                         /*Separar as informações*/
-                        k = sscanf(linhaCopiada, "%c %d %d", &tipoBomba, &linha, &coluna);
+                        k = sscanf(linhaCopiada, " %c %d %d", &tipoBomba, &linha, &coluna);
                         if (k != 3)
                         {
                             puts("File is corrupted");
@@ -159,17 +170,19 @@ int main(void) {
                             fclose(ficheiroOriginal);
                         }else{
                     
-                            if (linha < 0 || coluna < 0 || linha > 24 || coluna > 24)
+                            if ((linha < 0 || linha > 24) && (coluna < 0 || coluna > 24))
                             {
                                 puts("File is corrupted");
                                 limparMapa(matrizMapa);
                                 fclose(ficheiroOriginal);
+                            }else {
+                                matrizMapa[linha][coluna] = tipoBomba;
                             }
-                            matrizMapa[linha][coluna] = tipoBomba;
                         }
-                    }  
+                     
+                    
                 }               
-              
+                
             }
             fclose(ficheiroOriginal);           
             preencherMatriz(matrizMapa);
@@ -216,6 +229,7 @@ int main(void) {
         }else if (strncmp(opcao, "plant",5) == 0)
         {
             int n;
+            preencherMatriz(matrizMapa);
             n = sscanf(opcao, "%*s %d %d", &plantX, &plantY);
             if (n != 2)
             {
@@ -231,6 +245,11 @@ int main(void) {
                 {
                     matrizMapa[plantX][plantY] = '.';
                 }
+                if (matrizMapa[plantX][plantY] == '_')
+                {
+                    matrizMapa[plantX][plantY] = '.';
+                }
+                
             }
             
         }else {
@@ -280,6 +299,22 @@ void limparMapa(char matrizMapa[25][25])
             matrizMapa[i][j] = '\0';
         }
         
+    }
+    
+}
+
+int verFicheiroTexto(char file_name[MAX]){
+    int i;
+    char tipoFicheiro[MAX] = "";
+    for (i = strlen(file_name)-4; file_name[i] != '\0'; i++)
+    {
+        strncat(tipoFicheiro, &file_name[i], 1);
+    }
+    if (strcmp(tipoFicheiro, ".txt") == 0 || strcmp(tipoFicheiro, ".ini") == 0)
+    {
+        return 0;
+    }else {
+        return 1;
     }
     
 }

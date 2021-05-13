@@ -32,6 +32,13 @@ int main()
 
    while(fgets(linha, sizeof(linha), fp))
    {
+      if (linha[0] == '\n' || linha[0] == '#')
+      {
+         printf("Linha branca ou com #\n");
+         continue;
+      }
+      
+      
       printf("%s", linha);
       
    }
