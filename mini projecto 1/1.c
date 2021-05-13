@@ -140,7 +140,11 @@ int main(void) {
                 while (podesLerDimensoes == 0 && fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
                 {
                     
+<<<<<<< HEAD
                     if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
+=======
+                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\n')
+>>>>>>> 980f068ec447ec9fdb1cc3ed32f699dd480ec279
                     {
                         continue;                        
                     }
@@ -156,7 +160,11 @@ int main(void) {
 
                     /*PORQUE É QUE NÃO ESTÁ A IGNORAR AS LINHAS BRANCAS?*/
 
+<<<<<<< HEAD
                     if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
+=======
+                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\n')
+>>>>>>> 980f068ec447ec9fdb1cc3ed32f699dd480ec279
                     {
                         continue;                        
                     }
