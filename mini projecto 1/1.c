@@ -6,12 +6,12 @@
 void menu();
 void preencherMatriz(char matrizMapa[25][25]);
 void limparMapa(char matrizMapa[25][25]);
-int verFicheiroTexto(char file_name[MAX]);
+
 
 
 int main(void) {
     
-    char opcao[MAX], file_name[MAX], linhaExport[MAX],xExport[MAX], yExport[MAX],cExport[MAX];
+    char opcao[MAX], file_name[MAX];
     FILE *ficheiroOriginal, *ficheiroExport;
     int podesLerDimensoes = 0,triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
     
@@ -66,6 +66,7 @@ int main(void) {
 
         }else if (strncmp(opcao, "export", 6) == 0)
         {
+            char dimensoes[MAX] = "25 25";
             int k,n;
             n = sscanf(opcao,"%*s %s", file_name_export);
             if (n != 1)
@@ -81,30 +82,22 @@ int main(void) {
                 puts("Error opening file");
                 exit(EXIT_FAILURE);
             }
+
+            fputs(dimensoes,ficheiroExport);
+            fputc('\n',ficheiroExport);
             for (k = 0; k < 25; k++)
             {
                 int u;
                 for (u = 0; u < 25; u++)
                 {
-                    /*NAO ESTÁ A COPIAR BEM O CARACTER*/
-                    sprintf(xExport, " %d", k);
-                    sprintf(yExport, " %d", u);
-                    cExport[0] = matrizMapa[k][u];
-                    
-                    /*
-                    printf("%s\n", cExport);
-                    puts(xExport);
-                    puts(yExport);
-                    */
-                    strcpy(linhaExport,cExport);
-                    strcat(linhaExport, " ");
-                    strcat(linhaExport,xExport);
-                    strcat(linhaExport, " ");
-                    strcat(linhaExport, yExport);
                     
                     
-                    fputs(linhaExport, ficheiroExport);
-                    fputc('\n',ficheiroExport);
+                    if (matrizMapa[k][u] == '.' || matrizMapa[k][u] == '*')
+                    {
+                        fprintf(ficheiroExport, "%c %d %d\n",matrizMapa[k][u],k, u);
+                    }
+                    
+                    
                     
                 }
                 
@@ -114,9 +107,11 @@ int main(void) {
             
         }else if(strncmp(opcao, "read", 4) == 0)
         {    
-            int n,k,linha,coluna;
+            int n,k,linha,coluna,matrizX,matrizY,j;
             char tipoBomba;
             n = sscanf(opcao,"%*s %s", file_name);
+            podesLerDimensoes = 0;
+            limparMapa(matrizMapa);
             if (n != 1)
             {
                 puts("Invalid command!");
@@ -126,30 +121,34 @@ int main(void) {
             ficheiroOriginal = fopen(file_name, "r");
             if (ficheiroOriginal == NULL)
             {                
-                puts("Error openning file");
-                exit(EXIT_FAILURE);
-            } else if (verFicheiroTexto(file_name) == 1)
-            {
-                                    /*ACHO QUE ISTO TRATA TO ERRO 34*/
-                puts("Error openning file");
-                exit(EXIT_FAILURE);
-            } else {
+                puts("Error opening file");
+                continue;
+            }
+            else {
 
                 /*Ler até ser lido as dimensões do ficheiro*/
-                /*PERGUNTAR AO STOR, NAO ESTÁ A IGNORAR LINHAS BRANCAS*/
                 while (podesLerDimensoes == 0 && fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroOriginal))
                 {
                     
-<<<<<<< HEAD
                     if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
-=======
-                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\n')
->>>>>>> 980f068ec447ec9fdb1cc3ed32f699dd480ec279
                     {
                         continue;                        
                     }
+                    j = sscanf(linhaCopiada, " %d %d", &matrizX, &matrizY);
+                    if ((j != 2))
+                    {
+                        puts("File is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+
+                    }else if ((matrizX != 25 || matrizY != 25))
+                    {
+                        puts("File is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }
                     
-                
+                    
                     podesLerDimensoes++;
                 }
                          
@@ -160,35 +159,34 @@ int main(void) {
 
                     /*PORQUE É QUE NÃO ESTÁ A IGNORAR AS LINHAS BRANCAS?*/
 
-<<<<<<< HEAD
                     if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\0' || linhaCopiada[0] == '\n' || linhaCopiada[0] == '\r')
-=======
-                    if (linhaCopiada[0] == '#' || linhaCopiada[0] == '\n')
->>>>>>> 980f068ec447ec9fdb1cc3ed32f699dd480ec279
                     {
                         continue;                        
                     }
                         
-                        /*Separar as informações*/
-                        k = sscanf(linhaCopiada, " %c %d %d", &tipoBomba, &linha, &coluna);
-                        if (k != 3)
-                        {
-                            puts("File is corrupted");
-                            limparMapa(matrizMapa);
-                            fclose(ficheiroOriginal);
-                        }else{
+                    /*Separar as informações*/
+                    k = sscanf(linhaCopiada, " %c %d %d", &tipoBomba, &linha, &coluna);
+                    if (k != 3)
+                    {
+                        puts("File is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }
+                    else if (linha < 0 || linha > 24 || coluna < 0 || coluna > 24)
+                    {              
+                        puts("File is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }else if (tipoBomba != '*' && tipoBomba != '.')
+                    {
+                        puts("File is corrupted");
+                        limparMapa(matrizMapa);
+                        fclose(ficheiroOriginal);
+                    }
                     
-                            if ((linha < 0 || linha > 24) && (coluna < 0 || coluna > 24))
-                            {
-                                puts("File is corrupted");
-                                limparMapa(matrizMapa);
-                                fclose(ficheiroOriginal);
-                            }else {
-                                matrizMapa[linha][coluna] = tipoBomba;
-                            }
-                        }
-                     
-                    
+                    else {
+                        matrizMapa[linha][coluna] = tipoBomba;
+                    }
                 }               
                 
             }
@@ -311,18 +309,3 @@ void limparMapa(char matrizMapa[25][25])
     
 }
 
-int verFicheiroTexto(char file_name[MAX]){
-    int i;
-    char tipoFicheiro[MAX] = "";
-    for (i = strlen(file_name)-4; file_name[i] != '\0'; i++)
-    {
-        strncat(tipoFicheiro, &file_name[i], 1);
-    }
-    if (strcmp(tipoFicheiro, ".txt") == 0 || strcmp(tipoFicheiro, ".ini") == 0)
-    {
-        return 0;
-    }else {
-        return 1;
-    }
-    
-}
