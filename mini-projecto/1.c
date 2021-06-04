@@ -5,13 +5,11 @@
 #define MAX 256
 
 void menu();
-void preencherMatriz(char matrizMapa[25][25]);
-void limparMapa(char matrizMapa[25][25]);
-void lerFicheiro(char file_name[MAX], char matrizMapa[25][25]);
+char ** lerFicheiro(char file_name[MAX]);
 
 
 int main(int argc, char* argv[]) {
-    
+    char **matriz = NULL;
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroExport;
     int triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
@@ -52,7 +50,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }else {
         strcpy(file_name, argv[1]);
-        lerFicheiro(file_name, matrizMapa);
+        matriz = lerFicheiro(file_name);
     }
     
     /*Primeiro menu*/
@@ -115,14 +113,12 @@ int main(int argc, char* argv[]) {
         }else if(strncmp(opcao, "show", 4) == 0)
         {
             int linhas;
-            preencherMatriz(matrizMapa);
-            
             for (linhas = 0; linhas < 25; linhas++)
             {
                 int colunas;
                 for (colunas = 0; colunas < 25; colunas++)
                 {
-                    printf("%c", matrizMapa[linhas][colunas]);
+                    printf("%c", matriz[linhas][colunas]);
                 }
                 putchar('\n');
             }
@@ -155,7 +151,6 @@ int main(int argc, char* argv[]) {
         }else if (strncmp(opcao, "plant",5) == 0)
         {
             int n;
-            preencherMatriz(matrizMapa);
             n = sscanf(opcao, "%*s %d %d", &plantX, &plantY);
             if (n != 2)
             {
@@ -189,7 +184,8 @@ int main(int argc, char* argv[]) {
 void menu(){
    puts("+-----------------------------------------------------");
    puts("show                - show the mine map");
-   puts("trigger <x> <y>     - trigger mine at <x> <y>");
+   puts("propagate <x> <y>   - explode bomb at <x> <y>");
+   puts("log <x> <y>	     - explode bomb at <x> <y>");
    puts("plant <x> <y>       - place armed mine at <x> <y>");
    puts("export <filename>   - save file with current map");
    puts("quit                - exit program");
@@ -197,45 +193,16 @@ void menu(){
    puts("+-----------------------------------------------------");
 }
 
-void preencherMatriz(char matrizMapa[25][25])
-{
-    int linhas;
-    for (linhas = 0; linhas < 25; linhas++)
-    {
-        int colunas;
-        for (colunas = 0; colunas < 25; colunas++)
-        {
-            if (matrizMapa[linhas][colunas] == '\0')
-            {
-                matrizMapa[linhas][colunas] = '_';
-            }            
-        }        
-    }
-}
 
-void limparMapa(char matrizMapa[25][25])
-{
-    int i;
-    for (i = 0; i < 25; i++)
-    {
-        int j;
-        for (j = 0; j < 25; j++)
-        {
-            matrizMapa[i][j] = '\0';
-        }
-        
-    }
-    
-}
 
-void lerFicheiro(char file_name[MAX], char matrizMapa[25][25])
+char ** lerFicheiro(char file_name[MAX])
 {
+    char ** mapa = NULL;
     FILE *ficheiroPtr;
-    int k, linha,coluna,matrizX,matrizY,j;
+    int u,i,k, linha,coluna,matrizX,matrizY,j;
     char tipoBomba;
     char linhaCopiada[MAX];
     int podesLerDimensoes = 0;
-    limparMapa(matrizMapa);
     
     ficheiroPtr = fopen(file_name, "r");
     if (ficheiroPtr == NULL)
@@ -255,16 +222,25 @@ void lerFicheiro(char file_name[MAX], char matrizMapa[25][25])
             if (j != 2)
             {
                 puts(MSG_FILE_CRP);
-                limparMapa(matrizMapa);
                 fclose(ficheiroPtr);
             } else if (matrizX < 0 || matrizY < 0)
             {
                 puts(MSG_FILE_CRP);
-                limparMapa(matrizMapa);
                 fclose(ficheiroPtr);
             }
 
             podesLerDimensoes++; 
+            mapa = (char **) malloc(matrizX * sizeof(char*));
+            for (i = 0; i < matrizX; i++)
+            {
+                mapa[i] = (char *) malloc(matrizY * sizeof(char));
+                for (u = 0; u < matrizY; u++)
+                {
+                    mapa[i][u] = '_';
+                }
+                
+            }
+            
         }
 
         while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroPtr))
@@ -279,27 +255,23 @@ void lerFicheiro(char file_name[MAX], char matrizMapa[25][25])
                 if (k != 3)
                 {
                     puts("File is corrupted");
-                    limparMapa(matrizMapa);
                     fclose(ficheiroPtr);
                 }
-                else if (linha < 0 || linha > 24 || coluna < 0 || coluna > 24)
+                else if (linha < 0 || linha > matrizX || coluna < 0 || coluna > matrizY)
                 {              
                     puts("File is corrupted");
-                    limparMapa(matrizMapa);
                     fclose(ficheiroPtr);
                 }else if (tipoBomba != '*' && tipoBomba != '.')
                 {
                     puts("File is corrupted");
-                    limparMapa(matrizMapa);
                     fclose(ficheiroPtr);
                 }
                 else {
-                    matrizMapa[linha][coluna] = tipoBomba;
+                    mapa[linha][coluna] = tipoBomba;
                 }
             }               
                 
         }
-        fclose(ficheiroPtr);           
-        preencherMatriz(matrizMapa);
-        
+    fclose(ficheiroPtr);           
+    return mapa;
 }
