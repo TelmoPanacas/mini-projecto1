@@ -7,6 +7,12 @@
 void menu();
 char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY);
 
+typedef struct {
+        char tipoDeBomba;
+        int coordX;
+        int coordY;
+        Bomba * next;
+}Bomba;
 
 int main(int argc, char* argv[]) {
     char **matriz = NULL;
@@ -170,6 +176,7 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
     char linhaCopiada[MAX];
     int podesLerDimensoes = 0;
     
+    Bomba teste;
     ficheiroPtr = fopen(file_name, "r");
     if (ficheiroPtr == NULL)
     {
@@ -248,3 +255,5 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
     fclose(ficheiroPtr);           
     return mapa;
 }
+
+
