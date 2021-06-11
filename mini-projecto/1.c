@@ -5,44 +5,16 @@
 #define MAX 256
 
 void menu();
-char ** lerFicheiro(char file_name[MAX]);
+char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY);
 
 
 int main(int argc, char* argv[]) {
     char **matriz = NULL;
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroExport;
-    int triggerX = -1, triggerY = -1, plantX = -1, plantY = -1;
+    int triggerX = -1, triggerY = -1, plantX = -1, plantY = -1, matrizX, matrizY;
 
-    
     char file_name_export[MAX];
-    char matrizMapa[25][25] = {
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'},
-        {'\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0','\0'}};
-    
 
     if (argc != 2)
     {
@@ -50,9 +22,9 @@ int main(int argc, char* argv[]) {
         return 0;
     }else {
         strcpy(file_name, argv[1]);
-        matriz = lerFicheiro(file_name);
+        matriz = lerFicheiro(file_name, &matrizX, &matrizY);
     }
-    
+    printf("MatrizY = %d\t\t MatrizX = %d\n", matrizY, matrizX);
     /*Primeiro menu*/
     menu();
     
@@ -72,7 +44,6 @@ int main(int argc, char* argv[]) {
 
         }else if (strncmp(opcao, "export", 6) == 0)
         {
-            char dimensoes[MAX] = "25 25";
             int k,n;
             n = sscanf(opcao,"%*s %s", file_name_export);
             if (n != 1)
@@ -88,22 +59,18 @@ int main(int argc, char* argv[]) {
                 exit(EXIT_FAILURE);
             }
 
-            fputs(dimensoes,ficheiroExport);
-            fputc('\n',ficheiroExport);
-            for (k = 0; k < 25; k++)
+            fprintf(ficheiroExport, "%d %d\n",matrizX, matrizY);
+            for (k = 0; k < matrizX; k++)
             {
                 int u;
-                for (u = 0; u < 25; u++)
+                for (u = 0; u < matrizY; u++)
                 {
                     
                     
-                    if (matrizMapa[k][u] == '.' || matrizMapa[k][u] == '*')
+                    if (matriz[k][u] == '.' || matriz[k][u] == '*')
                     {
-                        fprintf(ficheiroExport, "%c %d %d\n",matrizMapa[k][u],k, u);
-                    }
-                    
-                    
-                    
+                        fprintf(ficheiroExport, "%c %d %d\n",matriz[k][u],k, u);
+                    }                    
                 }
                 
             }
@@ -113,10 +80,10 @@ int main(int argc, char* argv[]) {
         }else if(strncmp(opcao, "show", 4) == 0)
         {
             int linhas;
-            for (linhas = 0; linhas < 25; linhas++)
+            for (linhas = 0; linhas < matrizX; linhas++)
             {
                 int colunas;
-                for (colunas = 0; colunas < 25; colunas++)
+                for (colunas = 0; colunas < matrizY; colunas++)
                 {
                     printf("%c", matriz[linhas][colunas]);
                 }
@@ -132,17 +99,17 @@ int main(int argc, char* argv[]) {
                 continue;
             }
             
-            if (triggerX > 24 || triggerY >24 || triggerX < 0 || triggerY < 0)
+            if (triggerX > matrizX-1 || triggerY >matrizY-1 || triggerX < 0 || triggerY < 0)
             {
                 puts("Invalid coordinate");
             }else {
         
-                if (matrizMapa[triggerX][triggerY] == '.')
+                if (matriz[triggerX][triggerY] == '.')
                 {
-                    matrizMapa[triggerX][triggerY] = '*';
+                    matriz[triggerX][triggerY] = '*';
                 }
 
-                if (matrizMapa[triggerX][triggerY] != '.' && matrizMapa[triggerX][triggerY] != '*')
+                if (matriz[triggerX][triggerY] != '.' && matriz[triggerX][triggerY] != '*')
                 {
                     puts("No mine at specified coordinate");
                 }
@@ -158,17 +125,17 @@ int main(int argc, char* argv[]) {
                 continue;
             }
 
-            if (plantX > 24 || plantY >24 || plantX < 0 || plantY < 0 )
+            if (plantX > matrizX-1 || plantY >matrizY-1 || plantX < 0 || plantY < 0 )
             {
                 puts("Invalid coordinate");
             }else{
-                if (matrizMapa[plantX][plantY] == '*')
+                if (matriz[plantX][plantY] == '*')
                 {
-                    matrizMapa[plantX][plantY] = '.';
+                    matriz[plantX][plantY] = '.';
                 }
-                if (matrizMapa[plantX][plantY] == '_')
+                if (matriz[plantX][plantY] == '_')
                 {
-                    matrizMapa[plantX][plantY] = '.';
+                    matriz[plantX][plantY] = '.';
                 }
                 
             }
@@ -185,7 +152,7 @@ void menu(){
    puts("+-----------------------------------------------------");
    puts("show                - show the mine map");
    puts("propagate <x> <y>   - explode bomb at <x> <y>");
-   puts("log <x> <y>	     - explode bomb at <x> <y>");
+   puts("log <x> <y>	    - explode bomb at <x> <y>");
    puts("plant <x> <y>       - place armed mine at <x> <y>");
    puts("export <filename>   - save file with current map");
    puts("quit                - exit program");
@@ -194,12 +161,11 @@ void menu(){
 }
 
 
-
-char ** lerFicheiro(char file_name[MAX])
+char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatrizY)
 {
-    char ** mapa = NULL;
+    char ** mapa;
     FILE *ficheiroPtr;
-    int u,i,k, linha,coluna,matrizX,matrizY,j;
+    int u,i,k, linha,coluna,matrizX = 0,matrizY = 0,j;
     char tipoBomba;
     char linhaCopiada[MAX];
     int podesLerDimensoes = 0;
@@ -223,14 +189,23 @@ char ** lerFicheiro(char file_name[MAX])
             {
                 puts(MSG_FILE_CRP);
                 fclose(ficheiroPtr);
+                exit(0);
             } else if (matrizX < 0 || matrizY < 0)
             {
                 puts(MSG_FILE_CRP);
                 fclose(ficheiroPtr);
+                exit(0);
+            }else {
+                podesLerDimensoes++; 
             }
+        
+            
+        }
+        *enderecoMatrizX = matrizX;
+        *enderecoMatrizY = matrizY;
 
-            podesLerDimensoes++; 
-            mapa = (char **) malloc(matrizX * sizeof(char*));
+
+        mapa = (char **) malloc(matrizX  *sizeof(char*));
             for (i = 0; i < matrizX; i++)
             {
                 mapa[i] = (char *) malloc(matrizY * sizeof(char));
@@ -240,8 +215,6 @@ char ** lerFicheiro(char file_name[MAX])
                 }
                 
             }
-            
-        }
 
         while (fgets(linhaCopiada, sizeof(linhaCopiada), ficheiroPtr))
             {

@@ -1,5 +1,5 @@
 # Ficheiro exemplo
-25 25 
+15 15 
 
 . 0 1
 . 0 2
