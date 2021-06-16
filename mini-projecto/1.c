@@ -4,21 +4,71 @@
 #include "messages.h"
 #define MAX 256
 
+/*
+    Fazer lista ligada
+*/
+struct Bomba
+{
+    int tempo;
+    char tipoBomba;
+    int posicaoX;
+    int posicaoY;
+    struct Bomba *next;
+};
+
+typedef struct Bomba* node; /*Definir node como um pointer para tipo bomba*/
+
+/*Criar um node*/
+node createNode(){
+    node temp; /*Declarar um node*/
+    temp = (node)malloc(sizeof(struct Bomba));/*Alocar memória*/
+    temp->next = NULL;/*Fazer com que temp fique como último da lista, pois o ultimo node aponta sempre para NULL*/
+    return temp;
+}
+
+/*Adicionar o node à fila*/
+node addNode(node head, int tempo, char tipoBomba, int posicaoX, int posicaoY){
+    node temp, p;
+    temp = createNode(); /*createNode vai retornar um node que aponta par NULL*/
+    temp->tempo = tempo;            /*Vai adicionar os valores da bomba lida para o node*/
+    temp->tipoBomba = tipoBomba;
+    temp->posicaoX = posicaoX;
+    temp->posicaoY = posicaoY;
+    
+    if (head == NULL) /*Quando a lista está vazia*/
+    {
+        head = temp;
+    }
+    else{
+        p = head;
+        while (p->next != NULL)
+        {
+            p = p->next;/*Vai percorrer a lista toda encontrar o ultimo node*/
+        }
+        p->next = temp;/*Faz com que o último node da lista aponte para o temp fazendo com que temp seja o ultimo da lista agora*/
+    }
+
+    return head;
+    
+}
+
+struct ListaLigada
+{
+    node head;
+}lista;
+
+
+
 void menu();
 char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY);
 
-typedef struct {
-        char tipoDeBomba;
-        int coordX;
-        int coordY;
-        Bomba * next;
-}Bomba;
 
 int main(int argc, char* argv[]) {
     char **matriz = NULL;
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroExport;
     int triggerX = -1, triggerY = -1, plantX = -1, plantY = -1, matrizX, matrizY;
+
 
     char file_name_export[MAX];
 
@@ -30,10 +80,18 @@ int main(int argc, char* argv[]) {
         strcpy(file_name, argv[1]);
         matriz = lerFicheiro(file_name, &matrizX, &matrizY);
     }
-    printf("MatrizY = %d\t\t MatrizX = %d\n", matrizY, matrizX);
     /*Primeiro menu*/
     menu();
     
+    /*
+    lista.head = addNode(lista.head, 0, matriz[0][3], 0, 3);
+    printf("Tipo de bomba = %c , Tempo de explosão = %d , CoordX = %d , CoordY = %d\n", lista.head->tipoBomba,lista.head->tempo,lista.head->posicaoX,lista.head->posicaoY);
+    lista.head = addNode(lista.head, 16, matriz[0][4], 0, 4);
+    puts("Bomba a seguir");
+    printf("Tipo de bomba = %c , Tempo de explosão = %d , CoordX = %d , CoordY = %d\n", lista.head->next->tipoBomba,lista.head->next->tempo,lista.head->next->posicaoX,lista.head->next->posicaoY);
+    */
+
+
     while (1)
     {        
         putchar('>');
@@ -146,7 +204,31 @@ int main(int argc, char* argv[]) {
                 
             }
             
-        }else {
+        }else if(strncmp(opcao, "log",3) == 0){
+            int n, logX, logY;
+            n = sscanf(opcao, "%*s %d %d", &logX, &logY);
+            if (n != 2)
+            {
+                puts(MSG_INVAL_CRD);
+                continue;
+            }
+            if (logX > matrizX-1 || logY > matrizY-1 || logX < 0 || logY < 0 )
+            {
+                puts(MSG_INVAL_CRD);
+            }else {
+                if (matriz[logX][logY] != '*')
+                {
+                    continue;
+                }
+                /*
+                    Fazer o propagate, secalhar um função para fazer mesmo o propagate
+                    e outra para dar o printf do output
+                */
+            }
+            
+            
+        }
+        else {
             puts("Invalid command!");        
         }
 
@@ -176,7 +258,6 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
     char linhaCopiada[MAX];
     int podesLerDimensoes = 0;
     
-    Bomba teste;
     ficheiroPtr = fopen(file_name, "r");
     if (ficheiroPtr == NULL)
     {
