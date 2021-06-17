@@ -10,7 +10,6 @@
 struct Bomba
 {
     int tempo;
-    char tipoBomba;
     int posicaoX;
     int posicaoY;
     struct Bomba *next;
@@ -27,11 +26,10 @@ node createNode(){
 }
 
 /*Adicionar o node à fila*/
-node addNode(node head, int tempo, char tipoBomba, int posicaoX, int posicaoY){
+node addNode(node head, int tempo, int posicaoX, int posicaoY){
     node temp, p;
     temp = createNode(); /*createNode vai retornar um node que aponta par NULL*/
     temp->tempo = tempo;            /*Vai adicionar os valores da bomba lida para o node*/
-    temp->tipoBomba = tipoBomba;
     temp->posicaoX = posicaoX;
     temp->posicaoY = posicaoY;
     
@@ -61,7 +59,9 @@ struct ListaLigada
 
 void menu();
 char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY);
-
+void log(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY);
+void procurarBombasEExplodirHead(char** matriz, int matrizX, int matrizY);
+void apagarHead();
 
 int main(int argc, char* argv[]) {
     char **matriz = NULL;
@@ -216,14 +216,11 @@ int main(int argc, char* argv[]) {
             {
                 puts(MSG_INVAL_CRD);
             }else {
-                if (matriz[logX][logY] != '*')
+                if (matriz[logX][logY] != '.')
                 {
                     continue;
                 }
-                /*
-                    Fazer o propagate, secalhar um função para fazer mesmo o propagate
-                    e outra para dar o printf do output
-                */
+                log(logX, logY, matriz, matrizX, matrizY);
             }
             
             
@@ -338,3 +335,90 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
 }
 
 
+void log(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY){
+    lista.head = addNode(lista.head, 0, posicaoX, posicaoY);
+    while (lista.head != NULL)
+    {
+        procurarBombasEExplodirHead(matriz, matrizX, matrizY);
+    }
+    
+}
+
+void procurarBombasEExplodirHead(char **matriz, int matrizX, int matrizY){
+    int coordHeadX = lista.head->posicaoX;
+    int coordHeadY = lista.head->posicaoY;
+    
+    /*Posicao em Cima*/
+    if (coordHeadY != 0)
+    {    
+        if (matriz[coordHeadX][coordHeadY-1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+10,coordHeadX, coordHeadY+1);
+        }
+    }
+    /*Posicao Diagonal Superior Esquerda*/
+    if (coordHeadX != 0 && coordHeadY != 0)
+    {   
+        if (matriz[coordHeadX-1][coordHeadY-1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+11,coordHeadX-1, coordHeadY-1);
+        }
+    }
+    /*Posicao Esquerda*/
+    if (coordHeadX != 0)
+    {
+        if (matriz[coordHeadX-1][coordHeadY]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+12,coordHeadX-1, coordHeadY);
+        }
+    }
+    /*Posicao Diagonal Inferior Esquerda*/
+    if (coordHeadX != 0 && coordHeadY < matrizY){
+        if (matriz[coordHeadX-1][coordHeadY+1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+13,coordHeadX-1, coordHeadY+1);
+        }
+    }
+    /*Posicao em Baixo*/
+    if (coordHeadY < matrizY)
+    {    
+        if (matriz[coordHeadX][coordHeadY+1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+14,coordHeadX, coordHeadY+1);
+        } 
+    }
+    /*Posicao Diagonal Inferior Direita*/
+    if (coordHeadX < matrizX && coordHeadY < matrizY)
+    {       
+        if (matriz[coordHeadX+1][coordHeadY+1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+15,coordHeadX+1, coordHeadY+1);
+        }
+    }
+    /*Posicao Direita*/
+    if (coordHeadX < matrizX)
+    {    
+        if (matriz[coordHeadX+1][coordHeadY]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+16,coordHeadX+1, coordHeadY);
+        }
+    }
+    /*Posicao Diagonal Superior Direita*/
+    if (coordHeadX < matrizX && coordHeadY > 0)
+    {
+        if (matriz[coordHeadX+1][coordHeadY-1]=='.')
+        {
+            lista.head = addNode(lista.head, lista.head->tempo+17,coordHeadX+1, coordHeadY-1);
+        }
+    }
+    matriz[coordHeadX][coordHeadY] = '*';
+    printf("%d [%d, %d]\n",lista.head->tempo, lista.head->posicaoX, lista.head->posicaoY);
+    apagarHead();
+}
+void apagarHead(){
+    node temp = createNode();
+    temp = lista.head;
+    lista.head = temp->next;
+    free(temp);
+
+}
