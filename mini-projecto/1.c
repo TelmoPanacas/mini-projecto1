@@ -57,11 +57,11 @@ struct ListaLigada
 
 
 void menu();
-char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY);
+char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY, int* erro);
 void triggerLog(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY);
-void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY);
+void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer);
 void procurarBombasEExplodirHeadLog(char** matriz, int matrizX, int matrizY);
-void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY);
+void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer);
 void apagarHead();
 void show(char **matriz, int matrizX, int matrizY);
 
@@ -69,7 +69,7 @@ int main(int argc, char* argv[]) {
     char **matriz = NULL;
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroExport;
-    int plantX = -1, plantY = -1, matrizX, matrizY;
+    int plantX = -1, plantY = -1, matrizX, matrizY, erro, timer = 0;
 
 
     char file_name_export[MAX];
@@ -80,8 +80,14 @@ int main(int argc, char* argv[]) {
         return 0;
     }else {
         strcpy(file_name, argv[1]);
-        matriz = lerFicheiro(file_name, &matrizX, &matrizY);
+        matriz = lerFicheiro(file_name, &matrizX, &matrizY, &erro);
     }
+
+    if (erro == 1)
+    {
+        return 0;
+    }
+    
     /*Primeiro menu*/
     menu();
     
@@ -145,61 +151,21 @@ int main(int argc, char* argv[]) {
             
         }else if(strncmp(opcao, "show", 4) == 0)
         {
-            /*
-            int linhas;
-            for (linhas = 0; linhas < matrizX; linhas++)
-            {
-                int colunas;
-                for (colunas = 0; colunas < matrizY; colunas++)
-                {
-                    printf("%c", matriz[linhas][colunas]);
-                }
-                putchar('\n');
-            }
-            */
             show(matriz, matrizX, matrizY);
-
-        /*   
-        }
-        else if(strncmp(opcao, "trigger", 7) == 0)
-        {
-            int n;
-            n = sscanf(opcao,"%*s %d %d", &triggerX, &triggerY);
-            if (n != 2)
-            {
-                puts("Invalid coordinate");
-                continue;
-            }
-            
-            if (triggerX > matrizX-1 || triggerY >matrizY-1 || triggerX < 0 || triggerY < 0)
-            {
-                puts("Invalid coordinate");
-            }else {
-        
-                if (matriz[triggerX][triggerY] == '.')
-                {
-                    matriz[triggerX][triggerY] = '*';
-                }
-
-                if (matriz[triggerX][triggerY] != '.' && matriz[triggerX][triggerY] != '*')
-                {
-                    puts("No mine at specified coordinate");
-                }
-            }
-        */    
+   
         }else if (strncmp(opcao, "plant",5) == 0)
         {
             int n;
             n = sscanf(opcao, "%*s %d %d", &plantX, &plantY);
             if (n != 2)
             {
-                puts("Invalid coordinate");
+                puts("Error: invalid coordinate");
                 continue;
             }
 
             if (plantX > matrizX-1 || plantY >matrizY-1 || plantX < 0 || plantY < 0 )
             {
-                puts("Invalid coordinate");
+                puts("Error: invalid coordinate");
             }else{
                 if (matriz[plantX][plantY] == '*')
                 {
@@ -251,7 +217,7 @@ int main(int argc, char* argv[]) {
                     puts("Error: no bomb at specified coordinate");
                     continue;
                 }
-                triggerPropagate(logX, logY, matriz, matrizX, matrizY);
+                triggerPropagate(logX, logY, matriz, matrizX, matrizY, &timer);
             }
         }
         
@@ -267,8 +233,8 @@ void menu(){
    puts("+-----------------------------------------------------+");
    puts("show                - show the mine map");
    puts("propagate <x> <y>   - explode bomb at <x> <y>");
-   puts("log <x> <y>	    - explode bomb at <x> <y>");
-   puts("plant <x> <y>       - place armed mine at <x> <y>");
+   puts("log <x> <y>         - explode bomb at <x> <y>");
+   puts("plant <x> <y>       - place bomb at <x> <y>");
    puts("export <filename>   - save file with current map");
    puts("quit                - exit program");
    puts("sos                 - show menu");
@@ -276,7 +242,7 @@ void menu(){
 }
 
 
-char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatrizY)
+char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatrizY, int* erro)
 {
     char ** mapa;
     FILE *ficheiroPtr;
@@ -288,7 +254,7 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
     ficheiroPtr = fopen(file_name, "r");
     if (ficheiroPtr == NULL)
     {
-        puts("Error: missing file name");
+        puts("Error: could not open file");
         exit(0);
     }
     else{
@@ -302,12 +268,14 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
             j = sscanf(linhaCopiada, " %d %d", &matrizX, &matrizY);
             if (j != 2)
             {
-                puts("Error: file is corrupted");
+                puts("Error: invalid map dimensions");
+                *erro = 1;
                 fclose(ficheiroPtr);
                 exit(0);
-            } else if (matrizX < 0 || matrizY < 0)
+            } else if (matrizX < 1 || matrizY < 1)
             {
-                puts("Error: file is corrupted");
+                puts("Error: invalid map dimensions");
+                *erro = 1;
                 fclose(ficheiroPtr);
                 exit(0);
             }else {
@@ -342,16 +310,19 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
                 k = sscanf(linhaCopiada, " %c %d %d", &tipoBomba, &linha, &coluna);
                 if (k != 3)
                 {
-                    puts("File is corrupted");
+                    puts("Error: file is corrupted");
+                    *erro = 1;
                     fclose(ficheiroPtr);
                 }
-                else if (linha < 0 || linha > matrizX || coluna < 0 || coluna > matrizY)
+                else if (linha < 0 || linha > matrizX-1 || coluna < 0 || coluna > matrizY-1)
                 {              
-                    puts("File is corrupted");
+                    puts("Error: file is corrupted");
+                    *erro = 1;
                     fclose(ficheiroPtr);
                 }else if (tipoBomba != '*' && tipoBomba != '.')
                 {
-                    puts("File is corrupted");
+                    puts("Error: file is corrupted");
+                    *erro = 1;
                     fclose(ficheiroPtr);
                 }
                 else {
@@ -467,14 +438,14 @@ void show(char **matriz, int matrizX, int matrizY){
                 putchar('\n');
             }
 }
-void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY){
-    lista.head = addNode(lista.head, 0, posicaoX, posicaoY);
+void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer){
+    lista.head = addNode(lista.head, *timer, posicaoX, posicaoY);
     while (lista.head != NULL)
     {
-        procurarBombasEExplodirHeadPropagate(matriz, matrizX, matrizY);
+        procurarBombasEExplodirHeadPropagate(matriz, matrizX, matrizY, timer);
     }
 }
-void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY){
+void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer){
      int coordHeadX = lista.head->posicaoX;
     int coordHeadY = lista.head->posicaoY;
     
@@ -545,7 +516,10 @@ void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matriz
     {
         matriz[coordHeadX][coordHeadY] = '*';
         show(matriz, matrizX,matrizY);
+        printf("%d [%d, %d]\n",lista.head->tempo, lista.head->posicaoX, lista.head->posicaoY);
         puts("\n");
     }
     apagarHead();
+    *timer = lista.head->tempo;
+    
 }
