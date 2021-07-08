@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <string.h>
-#include <stdlib.h> 
+#include <stdlib.h>
 #define MAX 256
 
 /*
@@ -55,23 +55,25 @@ struct ListaLigada
 }lista;
 
 
-
+void check_leaks();
 void menu();
 char ** lerFicheiro(char file_name[MAX], int *matrizX, int *matrizY, int* erro);
-void triggerLog(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY);
+void triggerLog(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer);
 void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer);
-void procurarBombasEExplodirHeadLog(char** matriz, int matrizX, int matrizY);
-void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer);
+void procurarBombasEExplodirHeadLog(char** matriz, int limiteX, int limiteY, int *timer);
+void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer, int limiteX, int limiteY);
 void apagarHead();
 void show(char **matriz, int matrizX, int matrizY);
+void ordenarLista();
+void clearBuffer();
 
 int main(int argc, char* argv[]) {
     char **matriz = NULL;
     char opcao[MAX], file_name[MAX];
     FILE *ficheiroExport;
-    int plantX = -1, plantY = -1, matrizX, matrizY, erro, timer = 0;
+    int plantX = -1, plantY = -1, matrizX, matrizY, erro = 0, timer = 0;
 
-
+    
     char file_name_export[MAX];
 
     if (argc != 2)
@@ -85,7 +87,7 @@ int main(int argc, char* argv[]) {
 
     if (erro == 1)
     {
-        return 0;
+        exit(0);
     }
     
     /*Primeiro menu*/
@@ -99,30 +101,37 @@ int main(int argc, char* argv[]) {
     printf("Tipo de bomba = %c , Tempo de explosão = %d , CoordX = %d , CoordY = %d\n", lista.head->next->tipoBomba,lista.head->next->tempo,lista.head->next->posicaoX,lista.head->next->posicaoY);
     */
 
-
     while (1)
     {        
         putchar('>');
+        /*
         fgets(opcao,128,stdin);
-        
-        if (strncmp(opcao, "quit", 4) == 0)
+        */
+        fscanf(stdin,"%s",opcao);
+        if (strcmp(opcao, "quit") == 0)
         {
+            /*
+            Se der poia apagar este for
+            */
+            int i;
+            for (i = 0; i < matrizX; i++)
+            {
+                free(matriz[i]);
+                
+            }
+            free(matriz);
+            
+            exit(0);
 
-            return 0;
-
-        }else if(strncmp(opcao, "sos", 3) == 0){
+        }else if(strcmp(opcao, "sos") == 0){
             
             menu();
 
-        }else if (strncmp(opcao, "export", 6) == 0)
+        }else if (strcmp(opcao, "export") == 0)
         {
-            int k,n;
-            n = sscanf(opcao,"%*s %s", file_name_export);
-            if (n != 1)
-            {
-                puts("Invalid command!");
-                continue;
-            }
+            int k;
+            fscanf(stdin," %s", file_name_export);
+            
             
             ficheiroExport = fopen(file_name_export, "w");
             if (ficheiroExport == NULL)
@@ -149,19 +158,14 @@ int main(int argc, char* argv[]) {
             
             fclose(ficheiroExport);
             
-        }else if(strncmp(opcao, "show", 4) == 0)
+        }else if(strcmp(opcao, "show") == 0)
         {
             show(matriz, matrizX, matrizY);
    
-        }else if (strncmp(opcao, "plant",5) == 0)
+        }else if (strcmp(opcao, "plant") == 0)
         {
-            int n;
-            n = sscanf(opcao, "%*s %d %d", &plantX, &plantY);
-            if (n != 2)
-            {
-                puts("Error: invalid coordinate");
-                continue;
-            }
+            fscanf(stdin, " %d %d", &plantX, &plantY);
+            
 
             if (plantX > matrizX-1 || plantY >matrizY-1 || plantX < 0 || plantY < 0 )
             {
@@ -178,14 +182,10 @@ int main(int argc, char* argv[]) {
                 
             }
             
-        }else if(strncmp(opcao, "log",3) == 0){
-            int n, logX, logY;
-            n = sscanf(opcao, "%*s %d %d", &logX, &logY);
-            if (n != 2)
-            {
-                puts("Error: invalid coordinate");
-                continue;
-            }
+        }else if(strcmp(opcao, "log") == 0){
+            int logX, logY;
+            fscanf(stdin, " %d %d", &logX, &logY);
+            
             if (logX > matrizX-1 || logY > matrizY-1 || logX < 0 || logY < 0 )
             {
                 puts("Error: invalid coordinate");
@@ -195,19 +195,19 @@ int main(int argc, char* argv[]) {
                     puts("Error: no bomb at specified coordinate");
                     continue;
                 }
-                triggerLog(logX, logY, matriz, matrizX, matrizY);
+                if (matriz[logX][logY] == '.')
+                {
+                    triggerLog(logX, logY, matriz, matrizX, matrizY, &timer);
+                }
+                
             }
             
             
-        }else if (strncmp(opcao, "propagate", 9) == 0)
+        }else if (strcmp(opcao, "propagate") == 0)
         {
-            int n, logX, logY;
-            n = sscanf(opcao, "%*s %d %d", &logX, &logY);
-            if (n != 2)
-            {
-                puts("Error: invalid coordinate");
-                continue;
-            }
+            int logX, logY;
+            fscanf(stdin, " %d %d", &logX, &logY);
+            
             if (logX > matrizX-1 || logY > matrizY-1 || logX < 0 || logY < 0 )
             {
                 puts("Error: invalid coordinate");
@@ -217,15 +217,20 @@ int main(int argc, char* argv[]) {
                     puts("Error: no bomb at specified coordinate");
                     continue;
                 }
-                triggerPropagate(logX, logY, matriz, matrizX, matrizY, &timer);
+                if (matriz[logX][logY] == '.')
+                {
+                    triggerPropagate(logX, logY, matriz, matrizX, matrizY, &timer);
+                }
+                
             }
         }
         
         else {
             puts("Invalid command!");        
         }
-
+        clearBuffer();
     }
+
     return 0;
 }
 
@@ -336,16 +341,17 @@ char ** lerFicheiro(char file_name[MAX], int* enderecoMatrizX, int* enderecoMatr
 }
 
 
-void triggerLog(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY){
-    lista.head = addNode(lista.head, 0, posicaoX, posicaoY);
+void triggerLog(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer){
+    int limiteX = matrizX-1, limiteY = matrizY-1;
+    lista.head = addNode(lista.head, *timer, posicaoX, posicaoY);
     while (lista.head != NULL)
     {
-        procurarBombasEExplodirHeadLog(matriz, matrizX, matrizY);
+        procurarBombasEExplodirHeadLog(matriz, limiteX, limiteY, timer);
     }
     
 }
 
-void procurarBombasEExplodirHeadLog(char **matriz, int matrizX, int matrizY){
+void procurarBombasEExplodirHeadLog(char **matriz, int limiteX, int limiteY, int *timer){
     int coordHeadX = lista.head->posicaoX;
     int coordHeadY = lista.head->posicaoY;
     
@@ -354,7 +360,7 @@ void procurarBombasEExplodirHeadLog(char **matriz, int matrizX, int matrizY){
     {    
         if (matriz[coordHeadX-1][coordHeadY]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+10,coordHeadX-1, coordHeadY);
+            addNode(lista.head, lista.head->tempo+10,coordHeadX-1, coordHeadY);
         }
     }
     /*Posicao Diagonal Superior Esquerda*/
@@ -362,7 +368,7 @@ void procurarBombasEExplodirHeadLog(char **matriz, int matrizX, int matrizY){
     {   
         if (matriz[coordHeadX-1][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+11,coordHeadX-1, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+11,coordHeadX-1, coordHeadY-1);
         }
     }
     /*Posicao Esquerda*/
@@ -370,62 +376,64 @@ void procurarBombasEExplodirHeadLog(char **matriz, int matrizX, int matrizY){
     {
         if (matriz[coordHeadX][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+12,coordHeadX, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+12,coordHeadX, coordHeadY-1);
         }
     }
     /*Posicao Diagonal Inferior Esquerda*/
-    if (coordHeadY > 0 && coordHeadX < matrizX){
+    if (coordHeadY > 0 && coordHeadX < limiteX){
         if (matriz[coordHeadX+1][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+13,coordHeadX+1, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+13,coordHeadX+1, coordHeadY-1);
         }
     }
     /*Posicao em Baixo*/
-    if (coordHeadX < matrizX)
+    if (coordHeadX < limiteX)
     {    
         if (matriz[coordHeadX+1][coordHeadY]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+14,coordHeadX+1, coordHeadY);
+            addNode(lista.head, lista.head->tempo+14,coordHeadX+1, coordHeadY);
         } 
     }
     /*Posicao Diagonal Inferior Direita*/
-    if (coordHeadX < matrizX && coordHeadY < matrizY)
+    if (coordHeadX < limiteX && coordHeadY < limiteY)
     {       
         if (matriz[coordHeadX+1][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+15,coordHeadX+1, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+15,coordHeadX+1, coordHeadY+1);
         }
     }
     /*Posicao Direita*/
-    if (coordHeadY< matrizY)
+    if (coordHeadY< limiteY)
     {    
         if (matriz[coordHeadX][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+16,coordHeadX, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+16,coordHeadX, coordHeadY+1);
         }
     }
     /*Posicao Diagonal Superior Direita*/
-    if (coordHeadY < matrizY && coordHeadX > 0)
+    if (coordHeadY < limiteY && coordHeadX > 0)
     {
         if (matriz[coordHeadX-1][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+17,coordHeadX-1, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+17,coordHeadX-1, coordHeadY+1);
         }
     }
     if (matriz[coordHeadX][coordHeadY] != '*')
     {
         matriz[coordHeadX][coordHeadY] = '*';
         printf("%d [%d, %d]\n",lista.head->tempo, lista.head->posicaoX, lista.head->posicaoY);
+        *timer = lista.head->tempo;
     }
     apagarHead();
+    ordenarLista();
 }
+
 void apagarHead(){
-    node temp = createNode();
-    temp = lista.head;
+    node temp = lista.head;
     lista.head = temp->next;
     free(temp);
-
 }
+
 void show(char **matriz, int matrizX, int matrizY){
     int linhas;
             for (linhas = 0; linhas < matrizX; linhas++)
@@ -438,15 +446,18 @@ void show(char **matriz, int matrizX, int matrizY){
                 putchar('\n');
             }
 }
+
 void triggerPropagate(int posicaoX, int posicaoY, char** matriz, int matrizX, int matrizY, int *timer){
+    int limiteX = matrizX-1, limiteY = matrizY-1;
     lista.head = addNode(lista.head, *timer, posicaoX, posicaoY);
     while (lista.head != NULL)
     {
-        procurarBombasEExplodirHeadPropagate(matriz, matrizX, matrizY, timer);
+        procurarBombasEExplodirHeadPropagate(matriz, matrizX, matrizY, timer, limiteX, limiteY);
     }
 }
-void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer){
-     int coordHeadX = lista.head->posicaoX;
+
+void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matrizY, int *timer, int limiteX, int limiteY){
+    int coordHeadX = lista.head->posicaoX;
     int coordHeadY = lista.head->posicaoY;
     
     /*Posicao em Cima*/
@@ -454,7 +465,7 @@ void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matriz
     {    
         if (matriz[coordHeadX-1][coordHeadY]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+10,coordHeadX-1, coordHeadY);
+            addNode(lista.head, lista.head->tempo+10,coordHeadX-1, coordHeadY);
         }
     }
     /*Posicao Diagonal Superior Esquerda*/
@@ -462,7 +473,7 @@ void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matriz
     {   
         if (matriz[coordHeadX-1][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+11,coordHeadX-1, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+11,coordHeadX-1, coordHeadY-1);
         }
     }
     /*Posicao Esquerda*/
@@ -470,56 +481,95 @@ void procurarBombasEExplodirHeadPropagate(char** matriz, int matrizX, int matriz
     {
         if (matriz[coordHeadX][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+12,coordHeadX, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+12,coordHeadX, coordHeadY-1);
         }
     }
     /*Posicao Diagonal Inferior Esquerda*/
-    if (coordHeadY > 0 && coordHeadX < matrizX){
+    if (coordHeadY > 0 && coordHeadX < limiteX){
         if (matriz[coordHeadX+1][coordHeadY-1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+13,coordHeadX+1, coordHeadY-1);
+            addNode(lista.head, lista.head->tempo+13,coordHeadX+1, coordHeadY-1);
         }
     }
     /*Posicao em Baixo*/
-    if (coordHeadX < matrizX)
+    if (coordHeadX < limiteX)
     {    
         if (matriz[coordHeadX+1][coordHeadY]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+14,coordHeadX+1, coordHeadY);
+            addNode(lista.head, lista.head->tempo+14,coordHeadX+1, coordHeadY);
         } 
     }
     /*Posicao Diagonal Inferior Direita*/
-    if (coordHeadX < matrizX && coordHeadY < matrizY)
+    if (coordHeadX < limiteX && coordHeadY < limiteY)
     {       
         if (matriz[coordHeadX+1][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+15,coordHeadX+1, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+15,coordHeadX+1, coordHeadY+1);
         }
     }
     /*Posicao Direita*/
-    if (coordHeadY< matrizY)
+    if (coordHeadY< limiteY)
     {    
         if (matriz[coordHeadX][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+16,coordHeadX, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+16,coordHeadX, coordHeadY+1);
         }
     }
     /*Posicao Diagonal Superior Direita*/
-    if (coordHeadY < matrizY && coordHeadX > 0)
+    if (coordHeadY < limiteY && coordHeadX > 0)
     {
         if (matriz[coordHeadX-1][coordHeadY+1]=='.')
         {
-            lista.head = addNode(lista.head, lista.head->tempo+17,coordHeadX-1, coordHeadY+1);
+            addNode(lista.head, lista.head->tempo+17,coordHeadX-1, coordHeadY+1);
         }
     }
     if (matriz[coordHeadX][coordHeadY] != '*')
     {
         matriz[coordHeadX][coordHeadY] = '*';
         show(matriz, matrizX,matrizY);
-        printf("%d [%d, %d]\n",lista.head->tempo, lista.head->posicaoX, lista.head->posicaoY);
         puts("\n");
+        *timer = lista.head->tempo;
     }
     apagarHead();
-    *timer = lista.head->tempo;
+    ordenarLista();
+   
+}
+
+void ordenarLista(){
+    node node = NULL, temp = NULL;
+    int tempo;
+    int posicaoX;
+    int posicaoY;
+    node = lista.head;
+
+    while (node != NULL)
+    {
+        temp = node;
+        while (temp->next !=NULL)
+        {
+            if (temp->tempo > temp->next->tempo)
+            {
+                tempo = temp->tempo;
+                posicaoX = temp->posicaoX;
+                posicaoY = temp->posicaoY;
+
+                temp->tempo = temp->next->tempo;
+                temp->posicaoY = temp->next->posicaoY;
+                temp->posicaoX = temp->next->posicaoX;
+                
+                temp->next->tempo = tempo;
+                temp->next->posicaoX = posicaoX;
+                temp->next->posicaoY = posicaoY;
+            }
+            temp= temp->next;
+        }
+        node = node->next;
+        
+    }
     
+}
+
+void clearBuffer(){
+    char c;
+    while ((c = getchar()) != '\n' && c != EOF) {}
 }
